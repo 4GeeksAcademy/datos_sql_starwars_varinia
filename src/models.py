@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean
+from sqlalchemy import String, Boolean, Numeric, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 db = SQLAlchemy()
@@ -16,4 +16,64 @@ class User(db.Model):
             "id": self.id,
             "email": self.email,
             # do not serialize the password, its a security breach
+        }
+
+class People(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    birth_year: Mapped[str] = mapped_column(String(120), nullable=False)
+    gender: Mapped[str] = mapped_column(String(40), nullable=False)
+    species: Mapped[str] = mapped_column(String(60), nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "birth_year": self.birth_year,
+            "gender": self.gender,
+            "species": self.species,
+
+        }
+
+
+class Planet(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    diameter: Mapped[int] = mapped_column(Numeric(120), nullable=False)
+    climate: Mapped[str] = mapped_column(String(100), nullable=False)
+    population: Mapped[int] = mapped_column(Numeric(120), nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "orbital_period": self.orbital_period,
+            "climate": self.climate,
+            "population": self.population,
+            # do not serialize the password, its a security breach
+        }
+
+
+class FavoritPeople(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_user: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=True)
+    id_people: Mapped[int] = mapped_column(
+        ForeignKey("people.id"), nullable=True)
+
+    def serialize(self):
+        return {
+            "name": self.name,
+        }
+
+
+class FavoritPlanet(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_user: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=True)
+    id_planet: Mapped[int] = mapped_column(
+        ForeignKey("planet.id"), nullable=True)
+
+    def serialize(self):
+        return {
+            "name": self.name,
+
         }
